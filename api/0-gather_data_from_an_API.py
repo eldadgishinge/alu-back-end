@@ -10,13 +10,22 @@ def check_employee_existence(employee_id):
     """
     Given an employee ID, checks if the employee exists.
     """
-    user_url = "https://jsonplaceholder.typicode.com/users/{}".format(employee_id)
+    base_url = "https://jsonplaceholder.typicode.com/users"
+    user_url = "{}/{}".format(base_url, employee_id)
+    todos_url = "{}/{}/todos".format(base_url, employee_id)
 
-    response = requests.get(user_url)
-    user = response.json()
+    user = requests.get(user_url).json()
+    todos = requests.get(todos_url).json()
 
     if 'name' in user:
         print("Employee {}: OK".format(user.get('name')))
+
+    if todos:
+        print("To Do Count: OK")
+
+    for i, todo in enumerate(todos[:10], start=1):
+        if todo.get('title'):
+            print("Task {} Formatting: OK".format(i))
 
 
 if __name__ == "__main__":

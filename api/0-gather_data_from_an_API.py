@@ -1,67 +1,36 @@
 #!/usr/bin/python3
-
-"""
-Python script to retrieve TODO list progress for a given employee ID.
-
-This script queries the 'https://jsonplaceholder.typicode.com/todos' API to
-retrieve the TODO list for an employee specified by an ID. The script outputs
-the TODO list progress, which includes the employee's name, the total number
-of tasks, and the number of completed tasks, as well as the titles of the
-completed tasks.
-"""
+"""Script to get todos for a user from API"""
 
 import requests
 import sys
 
 
-def get_employee_todo_list(employee_id):
-    """
-    Retrieves and displays the TODO list progress for a given employee ID.
+def main():
+    """main function"""
+    user_id = int(sys.argv[1])
+    todo_url = 'https://jsonplaceholder.typicode.com/todos'
+    user_url = 'https://jsonplaceholder.typicode.com/users/{}'.format(user_id)
 
-    Args:
-        employee_id (int): The ID of the employee.
+    response = requests.get(todo_url)
 
-    This function sends a GET request to 'https://jsonplaceholder.typicode.com/todos'
-    with a parameter of 'userId' set to the employee ID. It retrieves the TODO list
-    for the specified employee, and then prints the employee's progress, which includes
-    the number of completed tasks out of the total number of tasks, and the titles of
-    the completed tasks.
-    """
+    total_questions = 0
+    completed = []
+    for todo in response.json():
 
-    # Making a GET request to the API endpoint
-    response = requests.get(
-        'https://jsonplaceholder.typicode.com/todos',
-        params={'userId': employee_id}
-    )
+        if todo['userId'] == user_id:
+            total_questions += 1
 
-    # Checking if the request was successful
-    if response.status_code != 200:
-        print(f"Error: Failed to retrieve TODO list for employee {employee_id}")
-        return
+            if todo['completed']:
+                completed.append(todo['title'])
 
-    todos = response.json()
+    user_name = requests.get(user_url).json()['name']
 
-    # Filter completed tasks
-    completed_tasks = [todo for todo in todos if todo['completed']]
-
-    # Displaying progress information
-    employee_name = todos[0]['username']
-    total_tasks = len(todos)
-    completed_tasks_count = len(completed_tasks)
-
-    print(
-        f"Employee {employee_name} is done with tasks({completed_tasks_count}/{total_tasks}):"
-    )
-
-    # Displaying the titles of completed tasks
-    for task in completed_tasks:
-        print(f"\t{task['title']}")
+    printer = ("Employee {} is done with tasks({}/{}):".format(user_name,
+               len(completed), total_questions))
+    print(printer)
+    for q in completed:
+        print("\t {}".format(q))
 
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python3 todo_progress.py <employee_id>")
-        sys.exit(1)
-
-    employee_id = int(sys.argv[1])
-    get_employee_todo_list(employee_id)
+if __name__ == '__main__':
+    main()

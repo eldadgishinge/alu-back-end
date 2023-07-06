@@ -1,42 +1,56 @@
 #!/usr/bin/python3
+
 """
-Module to export employee tasks to a CSV file.
+Python script to retrieve and export TODO list progress for a given employee ID in CSV format.
 """
-import csv
+
 import requests
 import sys
+import csv
 
 
-def export_employee_tasks_to_csv(employee_id):
+def get_employee_todo_list(employee_id):
     """
-    Given an employee ID, exports all tasks that are owned by this employee.
+    Retrieves and exports the TODO list progress for a given employee ID in CSV format.
     """
-    base_url = "https://jsonplaceholder.typicode.com/users"
-    user_url = f"{base_url}/{employee_id}"
-    todos_url = f"{base_url}/{employee_id}/todos"
 
-    user = requests.get(user_url).json()
-    todos = requests.get(todos_url).json()
+    # Making a GET request to the API endpoint
+    response = requests.get(
+        'https://jsonplaceholder.typicode.com/todos',
+        params={'userId': employee_id}
+    )
 
-    with open(f'{employee_id}.csv', 'w', newline='') as csvfile:
-        fieldnames = [
-            "USER_ID", "USERNAME", "TASK_COMPLETED_STATUS", "TASK_TITLE"
-        ]
-        writer = csv.DictWriter(
-            csvfile, fieldnames=fieldnames, quoting=csv.QUOTE_ALL
-        )
+    # Checking if the request was successful
+    if response.status_code != 200:
+        print(f"Error: Failed to retrieve TODO list for employee {employee_id}")
+        return
 
+    todos = response.json()
+
+    # Preparing the CSV filename
+    filename = f"{employee_id}.csv"
+
+    # Open the CSV file in write mode
+    with open(filename, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["USER_ID", "USERNAME", "TASK_COMPLETED_STATUS", "TASK_TITLE"])
+
+        # Writing each task as a row in the CSV file
         for todo in todos:
-            writer.writerow({
-                "USER_ID": user.get('id'),
-                "USERNAME": user.get('username'),
-                "TASK_COMPLETED_STATUS": todo.get('completed'),
-                "TASK_TITLE": todo.get('title')
-            })
+            user_id = todo['userId']
+            username = todo['username']
+            task_completed = todo['completed']
+            task_title = todo['title']
 
-    print("Number of tasks in CSV: OK")
-    print("User ID and Username: OK")
+            writer.writerow([user_id, username, task_completed, task_title])
+
+    print(f"TODO list progress exported to {filename}")
 
 
 if __name__ == "__main__":
-    export_employee_tasks_to_csv(int(sys.argv[1]))
+    if len(sys.argv) != 2:
+        print("Usage: python3 todo_progress.py <employee_id>")
+        sys.exit(1)
+
+    employee_id = int(sys.argv[1])
+    get_employee_todo_list(employee_id)

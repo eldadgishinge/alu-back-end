@@ -1,32 +1,52 @@
 #!/usr/bin/python3
+
 """
-Module to check if a given employee ID exists in the REST API.
+Python script to retrieve TODO list progress for a given employee ID.
 """
+
 import requests
 import sys
 
 
-def check_employee_existence(employee_id):
+def get_employee_todo_list(employee_id):
     """
-    Given an employee ID, checks if the employee exists.
+    Retrieves and displays the TODO list progress for a given employee ID.
     """
-    base_url = "https://jsonplaceholder.typicode.com/users"
-    user_url = "{}/{}".format(base_url, employee_id)
-    todos_url = "{}/{}/todos".format(base_url, employee_id)
 
-    user = requests.get(user_url).json()
-    todos = requests.get(todos_url).json()
+    # Making a GET request to the API endpoint
+    response = requests.get(
+        'https://jsonplaceholder.typicode.com/todos',
+        params={'userId': employee_id}
+    )
 
-    if 'name' in user:
-        print("Employee {}: OK".format(user.get('name')))
+    # Checking if the request was successful
+    if response.status_code != 200:
+        print(f"Error: Failed to retrieve TODO list for employee {employee_id}")
+        return
 
-    if todos:
-        print("To Do Count: OK")
+    todos = response.json()
 
-    for i, todo in enumerate(todos[:10], start=1):
-        if todo.get('title'):
-            print("Task {} Formatting: OK".format(i))
+    # Filter completed tasks
+    completed_tasks = [todo for todo in todos if todo['completed']]
+
+    # Displaying progress information
+    employee_name = todos[0]['username']
+    total_tasks = len(todos)
+    completed_tasks_count = len(completed_tasks)
+
+    print(
+        f"Employee {employee_name} is done with tasks({completed_tasks_count}/{total_tasks}):"
+    )
+
+    # Displaying the titles of completed tasks
+    for task in completed_tasks:
+        print(f"\t{task['title']}")
 
 
 if __name__ == "__main__":
-    check_employee_existence(int(sys.argv[1]))
+    if len(sys.argv) != 2:
+        print("Usage: python3 todo_progress.py <employee_id>")
+        sys.exit(1)
+
+    employee_id = int(sys.argv[1])
+    get_employee_todo_list(employee_id)

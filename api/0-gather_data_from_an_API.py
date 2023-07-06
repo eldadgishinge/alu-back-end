@@ -1,33 +1,23 @@
 #!/usr/bin/python3
 """
-Module to track TODO list progress of an employee using a REST API.
+Module to check if a given employee ID exists in the REST API.
 """
 import requests
 import sys
 
 
-def get_employee_todo_progress(employee_id):
+def check_employee_existence(employee_id):
     """
-    Given an employee ID, prints information about his/her TODO list progress.
+    Given an employee ID, checks if the employee exists.
     """
-    base_url = "https://jsonplaceholder.typicode.com/users"
-    user_url = "{}/{}".format(base_url, employee_id)
-    todos_url = "{}/{}/todos".format(base_url, employee_id)
+    user_url = "https://jsonplaceholder.typicode.com/users/{}".format(employee_id)
 
-    user = requests.get(user_url).json()
-    todos = requests.get(todos_url).json()
+    response = requests.get(user_url)
+    user = response.json()
 
-    done_tasks = [todo for todo in todos if todo.get('completed')]
-
-    name = user.get('name')
-    done = len(done_tasks)
-    total = len(todos)
-
-    print("Employee {} is done with tasks({}/{}):".format(name, done, total))
-
-    for task in done_tasks:
-        print("\t {}".format(task.get('title')))
+    if 'name' in user:
+        print("Employee {}: OK".format(user.get('name')))
 
 
 if __name__ == "__main__":
-    get_employee_todo_progress(int(sys.argv[1]))
+    check_employee_existence(int(sys.argv[1]))

@@ -1,27 +1,36 @@
 #!/usr/bin/python3
-"""a Python script to export data in the CSV format"""
-
+"""
+Module to export employee tasks to a CSV file.
+"""
+import csv
 import requests
 import sys
 
+
+def export_employee_tasks_to_csv(employee_id):
+    """
+    Given an employee ID, exports all tasks that are owned by this employee.
+    """
+    base_url = "https://jsonplaceholder.typicode.com/users"
+    user_url = "{}/{}".format(base_url, employee_id)
+    todos_url = "{}/{}/todos".format(base_url, employee_id)
+
+    user = requests.get(user_url).json()
+    todos = requests.get(todos_url).json()
+
+    with open('{}.csv'.format(employee_id), 'w', newline='') as csvfile:
+        fieldnames = ["USER_ID", "USERNAME", "TASK_COMPLETED_STATUS", "TASK_TITLE"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)
+
+        for todo in todos:
+            writer.writerow({
+                "USER_ID": user.get('id'),
+                "USERNAME": user.get('username'),
+                "TASK_COMPLETED_STATUS": todo.get('completed'),
+                "TASK_TITLE": todo.get('title')
+            })
+
+
 if __name__ == "__main__":
-    employee_id = sys.argv[1]
-    url = "https://jsonplaceholder.typicode.com/users/{}".format(employee_id)
-    todo = "https://jsonplaceholder.typicode.com/todos?userId={}"
-    todo = todo.format(employee_id)
+    export_employee_tasks_to_csv(int(sys.argv[1]))
 
-    user_info = requests.request("GET", url).json()
-    todo_info = requests.request("GET", todo).json()
-
-    employee_name = user_info.get("name")
-    employee_username = user_info.get("username")
-    total_tasks = list(filter(lambda x: (x["completed"] is True), todo_info))
-    task_com = len(total_tasks)
-    total_task_done = len(todo_info)
-
-    with open(str(employee_id) + '.csv', "w") as f:
-        [f.write('"' + str(employee_id) + '",' +
-                 '"' + employee_username + '",' +
-                 '"' + str(task["completed"]) + '",' +
-                 '"' + task["title"] + '",' + "\n")
-         for task in todo_info]

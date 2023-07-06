@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
 """
-This script exports data in JSON format containing all tasks from all employees.
+Module: todo_exporter.py
+This module exports data in JSON format containing all tasks from all employees.
 The format of the exported JSON is:
 {
     "USER_ID": [

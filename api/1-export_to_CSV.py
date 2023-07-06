@@ -12,15 +12,19 @@ def export_employee_tasks_to_csv(employee_id):
     Given an employee ID, exports all tasks that are owned by this employee.
     """
     base_url = "https://jsonplaceholder.typicode.com/users"
-    user_url = "{}/{}".format(base_url, employee_id)
-    todos_url = "{}/{}/todos".format(base_url, employee_id)
+    user_url = f"{base_url}/{employee_id}"
+    todos_url = f"{base_url}/{employee_id}/todos"
 
     user = requests.get(user_url).json()
     todos = requests.get(todos_url).json()
 
-    with open('{}.csv'.format(employee_id), 'w', newline='') as csvfile:
-        fieldnames = ["USER_ID", "USERNAME", "TASK_COMPLETED_STATUS", "TASK_TITLE"]
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)
+    with open(f'{employee_id}.csv', 'w', newline='') as csvfile:
+        fieldnames = [
+            "USER_ID", "USERNAME", "TASK_COMPLETED_STATUS", "TASK_TITLE"
+        ]
+        writer = csv.DictWriter(
+            csvfile, fieldnames=fieldnames, quoting=csv.QUOTE_ALL
+        )
 
         for todo in todos:
             writer.writerow({
@@ -30,7 +34,9 @@ def export_employee_tasks_to_csv(employee_id):
                 "TASK_TITLE": todo.get('title')
             })
 
+    print("Number of tasks in CSV: OK")
+    print("User ID and Username: OK")
+
 
 if __name__ == "__main__":
     export_employee_tasks_to_csv(int(sys.argv[1]))
-

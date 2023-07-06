@@ -10,20 +10,20 @@ def get_employee_todo_progress(employee_id):
     """
     Given an employee ID, prints information about his/her TODO list progress.
     """
-    user_url = "https://jsonplaceholder.typicode.com/users/{}".format(employee_id)
-    todos_url = "https://jsonplaceholder.typicode.com/users/{}/todos".format(employee_id)
+    base_url = "https://jsonplaceholder.typicode.com/users"
+    user_url = "{}/{}".format(base_url, employee_id)
+    todos_url = "{}/{}/todos".format(base_url, employee_id)
 
-    response = requests.get(user_url)
-    user = response.json()
+    user = requests.get(user_url).json()
+    todos = requests.get(todos_url).json()
 
-    response = requests.get(todos_url)
-    todos = response.json()
+    done_tasks = [todo for todo in todos if todo.get('completed')]
 
-    done_tasks = [todo for todo in todos if todo.get('completed') == True]
-    number_of_done_tasks = len(done_tasks)
-    total_number_of_tasks = len(todos)
+    name = user.get('name')
+    done = len(done_tasks)
+    total = len(todos)
 
-    print("Employee {} is done with tasks({}/{}):".format(user.get('name'), number_of_done_tasks, total_number_of_tasks))
+    print("Employee {} is done with tasks({}/{}):".format(name, done, total))
 
     for task in done_tasks:
         print("\t {}".format(task.get('title')))
@@ -31,4 +31,3 @@ def get_employee_todo_progress(employee_id):
 
 if __name__ == "__main__":
     get_employee_todo_progress(int(sys.argv[1]))
-
